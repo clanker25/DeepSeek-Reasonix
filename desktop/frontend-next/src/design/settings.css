@@ -1,0 +1,68 @@
+.prefs-sheet { grid-template-columns: 240px minmax(0, 1fr); border-radius: var(--r-lg); background: var(--surface); }
+.prefs-hd h1 { padding: 14px 18px 10px; background: var(--page); font: var(--w-semi) var(--fs-lead)/1.3 var(--ui); letter-spacing: 0; }
+.prefs-sheet > .prefs-hd > .prefs-find {
+  height: 30px; min-height: 30px; margin: 0; width: 100%; padding: 0 10px 0 32px; box-sizing: border-box;
+  border-radius: 7px; border: 1px solid var(--hair); box-shadow: none; background: var(--surface) no-repeat 10px center / 14px 14px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23666a63' stroke-width='1.45' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='4'/%3E%3Cpath d='M10 10l3.5 3.5'/%3E%3C/svg%3E");
+  color: var(--text); font: var(--w-reg) var(--fs-ui) var(--ui);
+}
+.prefs-nav { padding: 8px 10px 14px; gap: 2px; background: var(--page); }
+.prefs-nav button { height: 30px; min-height: 30px; padding: 0 10px; gap: 9px; border-radius: 7px; color: var(--muted); font: var(--w-reg) var(--fs-ui) var(--ui); }
+.prefs-nav button[aria-selected="true"] { background: var(--overlay); color: var(--text); }
+.prefs-nav button .nv { font: var(--w-reg) var(--fs-meta) var(--ui); color: var(--faint); }
+.prefs-main { padding: 18px 24px; background: var(--surface); }
+.prefs-pagetitle { margin: 0 0 12px; gap: 10px; max-width: none; align-items: baseline; }
+.prefs-pagetitle h2 { font: var(--w-semi) var(--fs-title)/1.3 var(--ui); }
+.prefs-pagetitle .desc { font: var(--w-reg) var(--fs-meta)/1.4 var(--ui); color: var(--faint); }
+.prefs-col { max-width: 760px; }
+.prefs-card { margin: 0 0 14px; padding: 12px 18px 4px; border: 1px solid var(--hair); border-radius: var(--r-lg); background: var(--raised); overflow: visible; }
+.prefs-card > header { padding: 0; margin: 0 0 4px; }
+.prefs-card > header h3 { margin: 0; font: var(--w-semi) var(--fs-lead)/1.4 var(--ui); }
+.prefs-card > header p { display: none; }
+.prefs-card > .grp { margin: 0; padding: 10px 0; border: 0; border-top: 1px solid var(--hair); border-radius: 0; background: none; box-shadow: none; column-gap: 16px; }
+.prefs-card > .grp .grp-hd h3 { font: var(--w-med) var(--fs-ui)/1.4 var(--ui); color: var(--text); }
+.prefs-card > .grp .hint { margin: 2px 0 0; font: var(--w-reg) var(--fs-meta)/1.5 var(--ui); color: var(--faint); max-width: none; }
+.prefs-card > .grp .apply { margin: 2px 0 0; font: var(--w-reg) var(--fs-micro)/1.4 var(--ui); color: var(--faint); }
+.prefs-card .seg { padding: 2px; gap: 2px; border-radius: 7px; background: var(--overlay); }
+.prefs-card .seg button { height: 26px; min-height: 26px; padding: 0 10px; border-radius: 5px; font: var(--w-reg) var(--fs-meta) var(--ui); color: var(--muted); }
+.prefs-card .seg button[aria-pressed="true"], .prefs-card .seg button[aria-checked="true"] { background: var(--raised); color: var(--text); font-weight: var(--w-med); box-shadow: 0 1px 2px rgb(0 0 0 / .07); }
+.prefs-card select { width: 140px; height: 30px; padding: 0 10px; border-radius: 7px; border: 1px solid var(--border); background-color: var(--surface); font: var(--w-reg) var(--fs-ui) var(--ui); }
+.prefs-col .prefs-card > .grp .grp-hd h3 { font-size: var(--fs-ui); font-weight: var(--w-med); }
+.prefs-main { container: prefsmain / inline-size; }
+@container prefsmain (min-width: 860px) {
+  .prefs-col[data-cols="2"] { max-width: none; column-count: 2; column-gap: 16px; }
+  .prefs-col[data-cols="2"] > .prefs-card { break-inside: avoid; }
+}
+.prefs-card > .srow { display: flex; align-items: center; gap: 16px; padding: 10px 0; border-top: 1px solid var(--hair); }
+.srow-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.srow-name { color: var(--text); font: var(--w-med) var(--fs-ui)/1.4 var(--ui); }
+.srow-desc { color: var(--faint); font: var(--w-reg) var(--fs-meta)/1.5 var(--ui); }
+.srow-meta > .apply { margin: 0; padding: 0; border: 0; color: var(--faint); font: var(--w-reg) var(--fs-micro)/1.4 var(--ui); }
+.srow-ctl { flex: none; display: flex; align-items: center; gap: 8px; }
+.spill { height: 24px; padding: 0 10px; border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--text); font: var(--w-reg) var(--fs-meta) var(--ui); white-space: nowrap; cursor: pointer; }
+.spill:hover:not(:disabled) { background: var(--overlay); }
+.srow-more { padding: 0 0 6px; }
+.srow-more .lrow { padding: 8px 0 8px 16px; border-top: 1px solid var(--hair); }
+.apply::before { display: none; }
+.prefs-col .prefs-card .seg button { font-weight: var(--w-reg); }
+.prefs-col .prefs-card .seg button[aria-pressed="true"], .prefs-col .prefs-card .seg button[aria-checked="true"] { font-weight: var(--w-med); }
+.prefs-main { grid-row: 1 / span 3; }
+.prefs-actions { grid-row: 1; position: absolute; top: 10px; right: 14px; z-index: 6; padding: 0; }
+.prefs-pagetitle { padding-right: 150px; }
+.prefs-hd h1 { padding: 14px 18px 10px; }
+.prefs-sheet > .prefs-hd > .prefs-find { margin: 0 10px 8px; width: calc(100% - 20px); }
+.prefs-nav { padding: 0 10px 14px; gap: 2px; }
+.prefs-nav button { gap: 9px; font: var(--w-reg) var(--fs-ui) var(--ui); }
+.prefs-nav button svg { width: 16px; height: 16px; stroke-width: 1.45; stroke-linecap: round; stroke-linejoin: round; }
+.prefs-nav button[aria-selected="true"] { font-weight: var(--w-reg); }
+.prefs-nav button .nv { margin-left: auto; font: var(--w-reg) var(--fs-meta) var(--ui); color: var(--faint); }
+.prefs-sheet { isolation: isolate; }
+.prefs-sheet::before { content: ""; position: absolute; z-index: -1; left: 0; top: 0; bottom: 0; width: 240px; background: var(--page); }
+.prefs-sheet::after { content: ""; position: absolute; left: 239px; top: 0; bottom: 0; width: 1px; background: var(--hair); pointer-events: none; }
+.prefs-nav { border-right: 0; }
+.prefs-nav button::before { display: none; }
+.prefs-sheet .prefs-nav button[aria-selected="true"] { background: var(--overlay); }
+.srow-name { line-height: normal; }
+.srow-meta > .apply { line-height: normal; }
+.prefs-hd h1 { padding-bottom: 12px; line-height: normal; }
+.prefs-sheet > .prefs-hd > .prefs-find { height: 32px; min-height: 32px; }
